@@ -1,0 +1,50 @@
+Status of pool: `zpool status`
+Destroy a pool: `zpool destroy tank`
+Create a pool: `zpool create -f tank raidz2 /dev/sdX`
+Export the pool: `zpool export tank`
+import by ID: `zpool import -a -d /dev/disk/partlabel`
+
+when hdd dies you can copy with dd the data over with no resilver time. 
+
+Watch IO: 
+watch `zpool iostat`
+
+take 2 disks, mirror them, then add them to a vdev
+raid0 the vdev. 
+`zpool create poolname mirror sda sdb
+zpool add poolname mirror sdc sdd`
+`zfs create -o encryption=on <dataset>`
+`zfs set compression=lz4 pool`
+`zpool import -d /dev/disk/by-id`
+`zpool import pool -d /dev/disk/by-partlabel`
+`zfs get all pool`
+For forgetting and umounting the pass phrase
+`zfs umount pool/dataset` 
+`zfs unload-key pool/dataset`
+
+to remount and enter the password 
+`zpool import pool/dataset`
+`zfs load-key pool/dataset`
+`zfs mount pool/dataset`
+
+file permissions
+`sudo chown -R shiroe /pool/dataset`
+`sudo chmod -R ug+rw /pool/dataset`
+
+Replace the hdd in the pool to resilver
+Take the disk offline:
+`zpool offline pool wwn-00dc`
+`zpool status`
+ `sudo zpool replace pool wwn-00dc /dev/sdm`
+
+view the partlabels:
+`sudo ls -la /dev/disk/by-partlabel`
+
+scrub the array:
+`zpool scrub tank` 
+Scrubbing should be done atleast once a week to check for data corruption errors. 
+
+stop services in use: 
+`sudo systemctl smbd` 
+`sudo service plexmediaserver stop`
+stops SMB and plex which are using the drives so you can export without reboot. `smbd` may be `smb` on different os
